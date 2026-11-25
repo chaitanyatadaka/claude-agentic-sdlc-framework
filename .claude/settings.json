@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(reference/**)",
+      "Write(reference/**)",
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh api:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(git config core.hooksPath:*)",
+      "Bash(git -c core.hooksPath:*)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(*sdlc-approve*)",
+      "PowerShell(git push:*)",
+      "PowerShell(git push --force:*)",
+      "PowerShell(gh pr create:*)",
+      "PowerShell(gh pr merge:*)",
+      "PowerShell(gh api:*)",
+      "PowerShell(gh auth:*)",
+      "PowerShell(gh repo delete:*)",
+      "PowerShell(git config core.hooksPath:*)",
+      "PowerShell(git -c core.hooksPath:*)",
+      "PowerShell(git commit --no-verify:*)",
+      "PowerShell(*sdlc-approve*)"
+    ]
+  }
+}

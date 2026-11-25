@@ -1,0 +1,6 @@
+#!/bin/sh
+# PLACEHOLDER (M0). Performs NO checks yet. Implemented in M5.
+# Planned: path scope, reference/ protection, nested .git detection,
+#          secret scan, agent identity on sdlc/* branches.
+echo "[sdlc placeholder] pre-commit: no checks performed (M0). Do not rely on this hook." >&2
+exit 0

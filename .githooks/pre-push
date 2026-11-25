@@ -1,0 +1,6 @@
+#!/bin/sh
+# PLACEHOLDER (M0). Performs NO checks yet. Implemented in M5.
+# Planned: branch namespace check, CP5/CP6 approval checks,
+#          force-push block, path scope check on the pushed range.
+echo "[sdlc placeholder] pre-push: no checks performed (M0). Do not rely on this hook." >&2
+exit 0

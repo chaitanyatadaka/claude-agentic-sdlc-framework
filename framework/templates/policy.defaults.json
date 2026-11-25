@@ -1,0 +1,13 @@
+{
+  "description": "Framework default retry and loop limits. A project may override any key in its sdlc.config.json under \"policy\", within the bounds listed in framework/docs/orchestrator.md.",
+  "agent_retry_max": 1,
+  "malformed_output_retry_max": 2,
+  "test_fix_attempts_per_task": 3,
+  "review_fix_rounds": 2,
+  "verification_fix_rounds": 2,
+  "design_review_rounds": 2,
+  "clarification_rounds": 3,
+  "human_revision_soft_warning": 3,
+  "automated_attempt_budget": 25,
+  "identical_failure_stop": 2
+}

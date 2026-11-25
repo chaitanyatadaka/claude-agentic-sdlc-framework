@@ -1,0 +1,18 @@
+{
+  "_comment": "Copy this file to project/sdlc.config.json and replace every value marked REPLACE. The framework never assumes a stack or a Jira project.",
+  "framework_version": "0.1.0",
+  "jira_project_key": "REPLACE-WITH-JIRA-PROJECT-KEY",
+  "base_branch": "main",
+  "branch_prefix": "sdlc",
+  "cp4_granularity": "task",
+  "verification": [
+    {
+      "name": "unit",
+      "command": "REPLACE-WITH-TEST-COMMAND",
+      "stop_on_failure": true
+    }
+  ],
+  "lint_command": "REPLACE-WITH-LINT-COMMAND",
+  "dependency_audit_command": null,
+  "policy": {}
+}

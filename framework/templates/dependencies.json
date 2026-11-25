@@ -1,0 +1,26 @@
+{
+  "description": "Framework-owned artifact graph. Projects cannot change it. Each node is a file in the run folder (base run) or the project root (base project). Each checkpoint covers some nodes and depends on input nodes; an approval stays valid only while the hashes of its covered nodes and inputs are unchanged.",
+  "nodes": {
+    "story": { "path": "input/story.md", "base": "run", "producer": "orchestrator", "revisioned": false },
+    "requirements": { "path": "requirements.md", "base": "run", "producer": "requirements-analyst", "revisioned": true },
+    "architecture": { "path": "architecture.md", "base": "run", "producer": "architect", "revisioned": true },
+    "design-review": { "path": "design-review.md", "base": "run", "producer": "design-reviewer", "revisioned": true },
+    "implementation-plan": { "path": "implementation-plan.md", "base": "run", "producer": "implementation-planner", "revisioned": true },
+    "implementation-log": { "path": "implementation-log.md", "base": "run", "producer": "developer", "revisioned": true },
+    "code-review": { "path": "code-review.md", "base": "run", "producer": "code-reviewer", "revisioned": true },
+    "verification": { "path": "verification.md", "base": "run", "producer": "verifier", "revisioned": true },
+    "pr-description": { "path": "pr-description.md", "base": "run", "producer": "pr-author", "revisioned": true },
+    "changelog-entry": { "path": "changelog-entry.md", "base": "run", "producer": "pr-author", "revisioned": true },
+    "changelog-file": { "path": "CHANGELOG.md", "base": "project", "producer": "orchestrator", "revisioned": false }
+  },
+  "checkpoints": {
+    "CP1": { "name": "Requirements", "covers": ["requirements"], "inputs": ["story"], "git": "none" },
+    "CP2": { "name": "Architecture and design review", "covers": ["architecture", "design-review"], "inputs": ["requirements"], "git": "none" },
+    "CP3": { "name": "Implementation plan", "covers": ["implementation-plan"], "inputs": ["requirements", "architecture", "design-review"], "git": "none" },
+    "CP4": { "name": "Implementation unit (task or batch)", "covers": ["implementation-log"], "inputs": ["implementation-plan", "requirements"], "git": "task-commits", "per_unit": true },
+    "CP5": { "name": "Code review and verification; authorizes push", "covers": ["code-review", "verification"], "inputs": ["implementation-plan", "implementation-log", "requirements"], "git": "branch-head" },
+    "CP6": { "name": "Pull request description; authorizes PR creation", "covers": ["pr-description", "changelog-entry", "changelog-file"], "inputs": ["code-review", "verification", "implementation-log", "requirements"], "git": "none" }
+  },
+  "order": ["CP1", "CP2", "CP3", "CP4", "CP5", "CP6"],
+  "phase_order": ["requirements", "architecture", "design-review", "implementation-plan", "implementation", "code-review", "verification", "pr-preparation"]
+}

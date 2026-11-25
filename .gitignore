@@ -1,0 +1,121 @@
+# ==========================================================================
+# Claude-Agentic-SDLC: root .gitignore
+# Single repository rooted at the workspace folder.
+# NOTE: reference/, framework/, and project/ source files must stay tracked.
+# Ignore rules below are kept narrow so they do not hide those areas.
+# ==========================================================================
+
+# --- Build outputs and dependencies -----------------------------------------
+node_modules/
+bower_components/
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.next/
+.nuxt/
+.angular/
+.svelte-kit/
+.parcel-cache/
+.vite/
+.turbo/
+.cache/
+playwright-report/
+test-results/
+TestResults/
+target/
+bin/
+obj/
+.gradle/
+*.class
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+*.egg-info/
+.eggs/
+
+# --- IDE and editor files ----------------------------------------------------
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+# --- OS files ----------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# --- Environment files, credentials, and secrets ----------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.kdbx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+credentials
+credentials.*
+secrets.*
+*.secret
+.npmrc
+.netrc
+.aws/
+.gcloud/
+.docker/config.json
+
+# --- Claude Code local and derived files -------------------------------------
+# Personal, machine-specific Claude Code settings
+.claude/settings.local.json
+.claude/*.local.*
+# Derived copies of framework files (option B delivery); regenerated, never committed
+project/.claude/sdlc/
+# Claude Code scratch output, if any
+.claude/tmp/
+
+# --- Temporary files and raw logs -------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+scratch/
+
+# --- Raw SDLC run data (decisions D5 and D-R5) ------------------------------
+# Raw Jira snapshot for each story: stored locally, not committed.
+project/docs/sdlc/*/input/
+# Raw evidence logs: summaries are committed, raw logs are not.
+project/docs/sdlc/*/evidence/**/*.log
+project/docs/sdlc/*/evidence/**/raw/
+# Temporary per-run working files
+project/docs/sdlc/*/tmp/
+# Single-run lock file (one active run per project)
+project/docs/sdlc/.lock
+
+# Activation links: junctions to framework/.claude/{agents,skills}.
+# The source is tracked under framework/; these links must not be tracked again.
+/.claude/agents/
+/.claude/skills/
+
+# Generated frontend build output (Vite writes here; regenerated on each build)
+project/backend/src/main/resources/static/
