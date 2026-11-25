@@ -38,10 +38,45 @@
                                           },
                   "implementation-log":  {
                                              "path":  "implementation-log.md",
-                                             "rev":  2,
-                                             "sha256":  "750f209d4f2589a9e5529b619595f890061b819b9d64e2bc92bc66e7439721b0",
-                                             "produced_by":  "developer",
-                                             "updated_at":  "2026-11-25T09:51:33.7352823Z"
-                                         }
+                                             "rev":  9,
+                                             "sha256":  "d641000880e146fd0e8491326303380499b5e6a0d02ba3e477485839d4b7d976",
+                                             "produced_by":  "orchestrator",
+                                             "updated_at":  "2026-11-25T11:12:45.1152320Z"
+                                         },
+                  "verification":  {
+                                       "path":  "verification.md",
+                                       "rev":  1,
+                                       "sha256":  "938848dc3effda56505521dac4435d3a8898daea60d8f59f53b2ac6197ee3503",
+                                       "produced_by":  "verifier",
+                                       "updated_at":  "2026-11-25T11:03:25.5491320Z"
+                                   },
+                  "code-review":  {
+                                      "path":  "code-review.md",
+                                      "rev":  1,
+                                      "sha256":  "c5d1429347201cfd9ab7fbba8c1b11a667646c0c6e7af35bfab6aab7f038edb0",
+                                      "produced_by":  "code-reviewer",
+                                      "updated_at":  "2026-11-25T11:06:53.8683777Z"
+                                  },
+                  "pr-description":  {
+                                         "path":  "pr-description.md",
+                                         "rev":  1,
+                                         "sha256":  "7bd56d54d4ab5b66e7c59af6d637c9d502e39b7ea7ded3390e10d84d2c588789",
+                                         "produced_by":  "pr-author",
+                                         "updated_at":  "2026-11-25T11:17:52.3274920Z"
+                                     },
+                  "changelog-entry":  {
+                                          "path":  "changelog-entry.md",
+                                          "rev":  1,
+                                          "sha256":  "2698ccd9929b5dd8a12172c9085e75e97f603ca791e4ad4edfd6391f8092fc7c",
+                                          "produced_by":  "pr-author",
+                                          "updated_at":  "2026-11-25T11:17:53.1389323Z"
+                                      },
+                  "changelog-file":  {
+                                         "path":  "CHANGELOG.md",
+                                         "rev":  1,
+                                         "sha256":  "c9815d54db077e8b12e64bfdebebb1be18888117f9607152fa5e0233ac426a7d",
+                                         "produced_by":  "orchestrator",
+                                         "updated_at":  "2026-11-25T11:17:53.9407117Z"
+                                     }
               }
 }

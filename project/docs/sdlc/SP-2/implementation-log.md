@@ -1,4 +1,4 @@
-# Implementation log: SP-2
+﻿# Implementation log: SP-2
 
 ### T1 attempt 1: Project scaffold (Maven backend and Vite frontend)
 - Status: blocked
@@ -38,8 +38,199 @@
 - Lint suppressions (with reason): none. No lint command is configured.
 - Commit: not committed
 
+### T2 attempt 1: Category and grocery item persistence
+- Status: complete
+- Files changed: project/backend/src/main/java/com/smartpantry/item/Category.java (new); project/backend/src/main/java/com/smartpantry/item/GroceryItem.java (new); project/backend/src/main/java/com/smartpantry/item/ItemRepository.java (new); project/backend/src/test/java/com/smartpantry/item/ItemPersistenceTest.java (new). No other file changed by this task.
+- Dependencies added: none. spring-boot-starter-data-jpa, H2 2.2.224 (pinned, pom.xml h2.version), and spring-boot-starter-test were already declared by T1 (Spring Boot 3.3.5 parent, Java 21).
+- Tests run: `cmd /c "set MAVEN_BASEDIR=backend&& backend\mvnw.cmd -B -f backend\pom.xml verify"` run from project/ via Invoke-Expression, command read from project/sdlc.config.json verification[0] -> 0, 9 passed, 0 failed (ItemPersistenceTest 8, SmartPantryApplicationTests 1). BUILD SUCCESS. Raw log: evidence/raw/T2-1.log.
+- Failure signature(s): earlier run in this attempt, before the test fix: 7 errors in ItemPersistenceTest, first error line "Unable to determine Dialect without JDBC metadata". Root cause was in the test, not the code: SpringApplicationBuilder.properties() sets default properties, which rank below application.properties, so the datasource stayed at ./data/smartpantry, which was locked. Fixed by passing the URL as a command-line argument in the test. The test was not weakened.
+- Deviations from plan:
+  - Category constants use the display names (Vegetables, Fruits, Dairy, Grains, Snacks, Others) instead of Java-style upper case, so the stored string and the API value equal the REQ-007 names. Assumption, listed in handoff.
+  - GroceryItem.quantity is java.lang.Integer mapped to a not-null column (plan says "int"), so a null quantity can reach the database and be rejected there, as the test expects.
+  - The file URL and ddl-auto=update are set only in the test. application.properties is not changed (it is not on the T2 list). Consequence: the default profile does not create the grocery_item table, because Spring Boot does not generate schema for a file database by default. Needs a decision in a later task or by the human (open question).
+  - The plan status "blocked by T1" is stale: T1 was approved at CP4 (commit 52a5f2d).
+- Lint suppressions (with reason): none. No lint command is configured (lint_command is null).
+- Commit: not committed (orchestrator commits).
+
+### T3, T4, T5, T11, T12 (partial) attempt 1: Add Item backend (create and list)
+- Status: complete
+- Scope: run key SP-2, brief "Add Item backend". Implements the create path (POST /api/items) and the minimum list endpoint (GET /api/items). Full task scope is not implemented: T5 get, update and delete; T12 get by id, PUT and DELETE; T7 query service and item view; ItemNotFoundException. Those stay open.
+- Files changed:
+  - project/backend/src/main/java/com/smartpantry/config/ClockConfig.java (new, T3)
+  - project/backend/src/main/java/com/smartpantry/expiry/ExpiryStatus.java (new, T3)
+  - project/backend/src/main/java/com/smartpantry/expiry/ExpiryClassifier.java (new, T3)
+  - project/backend/src/main/java/com/smartpantry/item/ItemRequest.java (new, T4)
+  - project/backend/src/main/java/com/smartpantry/item/ItemValidator.java (new, T4)
+  - project/backend/src/main/java/com/smartpantry/item/ItemValidationException.java (new, T4)
+  - project/backend/src/main/java/com/smartpantry/item/ItemService.java (new, T5; create and findAll only)
+  - project/backend/src/main/java/com/smartpantry/api/ApiErrorResponse.java (new, T11)
+  - project/backend/src/main/java/com/smartpantry/api/ApiErrorHandler.java (new, T11)
+  - project/backend/src/main/java/com/smartpantry/api/CorrelationIdFilter.java (new, T11)
+  - project/backend/src/main/java/com/smartpantry/api/JacksonConfig.java (new, T11)
+  - project/backend/src/main/java/com/smartpantry/item/ItemController.java (new, T12; POST and GET only)
+  - project/backend/src/main/resources/application.properties (modified: added spring.jpa.hibernate.ddl-auto=update with a comment; nothing else)
+  - Tests (new): project/backend/src/test/java/com/smartpantry/expiry/ExpiryClassifierTest.java; project/backend/src/test/java/com/smartpantry/item/ItemValidatorTest.java; project/backend/src/test/java/com/smartpantry/item/ItemServiceTest.java; project/backend/src/test/java/com/smartpantry/item/ItemControllerTest.java; project/backend/src/test/java/com/smartpantry/api/ApiErrorHandlerTest.java
+- Dependencies added: none. Spring Boot 3.3.5 (Jackson, Spring Data, MVC), H2 2.2.224 and spring-boot-starter-test were already declared.
+- Tests run: `cmd /c "set MAVEN_BASEDIR=backend&& backend\mvnw.cmd -B -f backend\pom.xml verify"` run from project/ through Invoke-Expression in PowerShell (command read from project/sdlc.config.json verification[0]) -> 0, 54 passed, 0 failed (ApiErrorHandlerTest 4, ExpiryClassifierTest 6, ItemControllerTest 13, ItemPersistenceTest 8, ItemServiceTest 10, ItemValidatorTest 12, SmartPantryApplicationTests 1). BUILD SUCCESS. Raw log: evidence/raw/Add-backend-1.log. No evidence summary written (per brief).
+- Failure signature(s): first run, 53 passed and 1 failed. ItemControllerTest.invalidFieldsReturn400WithEveryFailingField:110 "No value at JSON path $.fieldErrors.name". Cause: the fixture used category "Meat", a binding error. Jackson stops at the first binding error, so the validator never ran. Fixed by changing the fixture to category "Dairy" so all three rule checks run. The assertions on name, quantity and purchaseDate are unchanged. Binding-first behaviour is reported as a finding below.
+- Deviations from plan:
+  - Wire status: the API returns "valid", "expiring", "expired" or "none" (brief). The plan's ExpiryStatus names (EXPIRING_SOON) are kept inside the classifier. The controller maps them to the wire values, and a null expiry date is reported as "none". The classifier still returns VALID for null, as T3 requires.
+  - List: T7 is not built, so there is no ItemView or ItemQueryService. The list uses ItemService.findAll() (ordered by name then id in the database) and ItemController builds the response, a nested record ItemResponse, with ExpiryClassifier.
+  - purchaseDate is required (validator rule). The plan does not say; the brief's wording implies it.
+  - Error body has three fields: correlationId, message, fieldErrors (T11 record). The brief's example shows message and fieldErrors only; correlationId is additive.
+  - Jackson: ACCEPT_FLOAT_AS_INT is disabled (T11). I also set String-to-Integer coercion to Fail, so quantity "3" is rejected as a wrong type. This goes beyond the plan.
+  - ItemServiceTest uses the real ItemValidator with a fixed Clock, not a mock, so the rule cases run the real rules. The repository is mocked.
+  - Invalid date text and invalid category text are tested through the controller, not the service: ItemRequest is already typed, so bad text fails at binding.
+  - ApiErrorHandler also maps Spring's own 4xx errors (for example an unknown /api path) to a JSON 404.
+  - The default ./data H2 file was not opened by any test. Tests use a temp file. The schema is created by ddl-auto=update, which the tests exercise on the temp file. The default profile was not started.
+- Findings (for the orchestrator):
+  - F1: Binding stops at the first type error. A body with a wrong type (for example category "Meat") plus a rule error on another field (for example a blank name) returns only the binding error. The brief asks for every failing field. Fixing this needs a design decision (bind category and dates as text and validate them in the validator).
+  - F2: Name ordering uses the database collation. H2's default puts uppercase names before lowercase ones.
+  - F3: The status wire names differ from the plan's T3 and T19 wording (EXPIRING_SOON, VALID, "No expiry date"). The frontend must use the brief's values.
+- Lint suppressions (with reason): none. No lint command is configured (lint_command is null).
+- Commit: not committed (orchestrator commits).
+
+### T16, T17, T18, T19, T20 attempt 1: Add Item frontend (HTTP client, API modules, inventory list, add form, dashboard from API)
+- Status: blocked (implementation and build complete; Playwright end-to-end run not executed because the backend on port 8080 was not running)
+- Files changed:
+  - project/frontend/vite.config.js (added server.proxy for /api to http://localhost:8080; build and esbuild settings unchanged)
+  - project/frontend/src/App.jsx (loads GET /api/items on mount through listItems(); holds items, load state, retry and the toast; no sample data)
+  - project/frontend/src/pages/Inventory.jsx (loading, empty, error with Retry; Add item button; filters on API items using the server status)
+  - project/frontend/src/pages/Dashboard.jsx (reads items from App; loading and error states; layout unchanged; uses the server status)
+  - project/frontend/src/components/Sidebar.jsx (removed the "Sample data shown" note)
+  - project/frontend/src/styles.css (added button, dialog, form field, field error, form summary, error state, page-top and toast styles; existing rules unchanged)
+- Files created:
+  - project/frontend/src/api/client.js (apiRequest; ApiError with status, fieldErrors, correlationId, kind; 10 s timeout; readable messages; "Cannot reach the server. Try again." for network failure)
+  - project/frontend/src/api/items.js (listItems, createItem)
+  - project/frontend/src/data/categories.js (CATEGORIES, shared by the select and the dashboard)
+  - project/frontend/src/components/AddItemDialog.jsx (native dialog; client validation; server fieldErrors per field and a summary; Save disabled while saving; Escape and Cancel close; focus moves to the name field and returns to the opener)
+  - project/frontend/src/components/ErrorMessage.jsx (readable message, correlation ID when present, Retry)
+  - project/frontend/src/utils/itemValidation.js (validateItemForm, toCreatePayload, todayIso, isRealIsoDate)
+  - project/frontend/playwright.config.js (baseURL http://localhost:5174, channel chrome, no webServer)
+  - project/frontend/e2e/add-item.spec.js (end-to-end test; not yet run)
+- Files deleted:
+  - project/frontend/src/data/sampleData.js (no import of it remains)
+- Tests run:
+  - `npm --prefix frontend run build` (from project/) -> 0 (vite build, 42 modules). Output written to backend/src/main/resources/static (git-ignored, as configured).
+  - `npx playwright test --config=playwright.config.js --list` (from project/frontend) -> 0, 1 test discovered.
+  - `npx playwright test --config=playwright.config.js` -> NOT RUN. Preflight: `curl http://localhost:8080/api/items` returned 000 (backend not running). Per brief the backend was not started or stopped and the run was stopped. Dev server on 5174 is up (200).
+- Failure signature(s): none (no test has run against the backend yet)
+- Deviations from plan:
+  - The brief sets file names that differ from the plan: api/client.js (plan: httpClient.js), api/items.js (plan: itemsApi.js), and no ItemForm, ItemFormPage or validation folder. The plan's tests/*.spec.js files for T16 to T20 are not written. The only spec is e2e/add-item.spec.js, as the brief asks. Plan tests for T16 to T20 remain open.
+  - AddItemDialog.jsx, ErrorMessage.jsx and utils/itemValidation.js are new files not named in the brief. They hold the dialog, the error state and the validation rules.
+  - The inventory list is loaded once by App (on mount, through listItems()) and shared with the dashboard, so there is no duplicate request. Adding an item reloads the list through App and shows the toast there.
+  - The dashboard and inventory use the server's status field (valid, expiring, expired, none). Date arithmetic is not used for classification (DR-017). utils/expiry.js still exports expiryStatus, which is no longer used. The file was left as is.
+  - The name is sent as typed, untrimmed, to match backend storage (A-003). Only blankness is checked. Quantity is sent as a number. expiryDate is omitted when empty.
+  - The toast text is "Added {name}." and clears after 4 seconds.
+  - The vite dev proxy takes effect only after the dev server restarts. The server on 5174 was started before this change, so it must be restarted before the Playwright run.
+  - The build writes into backend/src/main/resources/static as configured. That folder is git-ignored.
+- Lint suppressions (with reason): none. No lint command is configured.
+- Commit: not committed (per brief).
+- Open items for the next attempt: start the backend on 8080 and restart the dev server on 5174 (the proxy needs the restart), then run `npx playwright test --config=playwright.config.js` from project/frontend, and write the evidence summary.
+
+### T5, T12 attempt 1: Edit and delete backend (get by id, update, delete, item not-found mapping)
+- Status: complete
+- Files changed:
+  - project/backend/src/main/java/com/smartpantry/item/ItemNotFoundException.java (new; maps to 404)
+  - project/backend/src/main/java/com/smartpantry/item/ItemService.java (added get, update, delete; create unchanged)
+  - project/backend/src/main/java/com/smartpantry/item/ItemController.java (added GET, PUT and DELETE /api/items/{id}; POST and GET list unchanged)
+  - project/backend/src/main/java/com/smartpantry/api/ApiErrorHandler.java (added ItemNotFoundException to 404 handler with fixed message; NOT_FOUND_MESSAGE)
+  - project/backend/src/test/java/com/smartpantry/item/ItemServiceTest.java (get, update and delete cases)
+  - project/backend/src/test/java/com/smartpantry/item/ItemControllerTest.java (GET by id, PUT and DELETE cases; delete removes the item from the list)
+  - project/backend/src/test/java/com/smartpantry/api/ApiErrorHandlerTest.java (404 mapping probe)
+- Tests run: `cmd /c "set MAVEN_BASEDIR=backend&& backend\mvnw.cmd -B -f backend\pom.xml verify"` (run from project/ through PowerShell Invoke-Expression, from verification[0] of sdlc.config.json) -> 0, 72 passed, 0 failed (ApiErrorHandlerTest 5, ExpiryClassifierTest 6, ItemControllerTest 21, ItemPersistenceTest 8, ItemServiceTest 19, ItemValidatorTest 12, SmartPantryApplicationTests 1). BUILD SUCCESS. No H2 lock message in the raw log (tests use temporary database files).
+- Failure signature(s): none
+- Deviations from plan:
+  - T7 (ItemQueryService, ItemView, ItemFilter) is not implemented in this step. GET by id returns the same ItemResponse as the list, with status computed by the existing wireStatus in the controller. ItemService.get returns the stored entity, as T5 describes.
+  - ApiErrorHandlerTest gained a 404 probe, which is outside the T12 file list. The change was requested for the item not-found mapping (T11 expectation).
+  - Tests and code were written in one pass; no separate failing run was recorded before the implementation.
+  - Update checks the item exists (404) before it validates the body (400), so an unknown id returns 404 whatever the body.
+- Lint suppressions (with reason): none. No lint command is configured.
+- Commit: not committed (per brief).
+
+### Edit and delete frontend (brief SP-2 "Edit and delete frontend"; plan T20 edit and T21 delete) attempt 1: Edit and Delete from the inventory table
+- Status: blocked (implementation and build complete; Playwright run not executed because the backend and dev server are not running the current code, see Blockers)
+- Files changed:
+  - project/frontend/src/api/items.js (added updateItem (PUT /api/items/{id}) and deleteItem (DELETE /api/items/{id}); createItem and listItems unchanged)
+  - project/frontend/src/components/AddItemDialog.jsx (optional item prop; edit mode titled "Edit item", pre-filled from the row, PUT on save; add mode unchanged apart from the create/update choice)
+  - project/frontend/src/pages/Inventory.jsx (Actions column with Edit and Delete per row, aria-labels "Edit {name}" and "Delete {name}"; edit and delete dialog state; Add flow unchanged)
+  - project/frontend/src/App.jsx (onItemUpdated shows "Updated {name}." and refreshes the shared list; onItemDeleted shows "Deleted {name}." and refreshes the shared list, so the dashboard follows)
+  - project/frontend/src/styles.css (added btn-danger, btn-danger-subtle, btn-sm and row-actions only; existing rules unchanged)
+- Files created:
+  - project/frontend/src/components/DeleteItemDialog.jsx (confirmation "Delete {name}?"; Cancel focused on open; Escape and Cancel close without deleting; readable error shown in the dialog and the item stays listed)
+  - project/frontend/e2e/edit-delete.spec.js (edit, cancel, Escape, confirm delete, dashboard count and reload checks)
+- Files deleted: none
+- Tests run:
+  - `npm --prefix frontend run build` (from project/) -> 0 (vite build, 43 modules; output in backend/src/main/resources/static, git-ignored)
+  - `npx playwright test --config=playwright.config.js --list` (from project/frontend) -> 0, 2 tests discovered (add-item and edit-delete)
+  - `npx playwright test --config=playwright.config.js` -> NOT RUN. Preflight failed (see Blockers).
+- Failure signature(s): none (no test executed)
+- Deviations from plan:
+  - Plan T20 names ItemForm.jsx; this run reuses AddItemDialog in edit mode instead, as the brief asks (no rewrite of Add Item). Plan T21's item detail view is not built (not in the brief).
+  - The UI does not call GET /api/items/{id}. Edit pre-fills from the list row, which has the same fields. No getItem client function was added.
+  - toCreatePayload (named for POST) builds the PUT body too; the body is the same.
+  - Escape and Cancel are ignored while a delete is in flight. Delete does not remove the row before the refresh.
+  - Lint: no lint command configured, so none run.
+- Lint suppressions (with reason): none
+- Commit: not committed (per brief).
+- Blockers for the Playwright run:
+  1. Backend on 8080 (java, started 16:02:03 local) is older than ItemController.java and ItemService.java (modified 16:07 local). The running process has no /api/items/{id} route: OPTIONS /api/items/1 -> 404 and GET /api/items -> 200 at 10:38Z. GET by id, PUT and DELETE must be served before the frontend flow can pass. The backend needs a restart by the human.
+  2. Dev server on 5174 (node, started 15:39:03 local) is older than frontend/vite.config.js (modified 15:55:40 local). Restart it after the backend. GET /api/items through 5174 returns 200, so the proxy appears to work, but the brief requires a restart.
+  I did not start or stop either process.
+- Evidence: raw preflight and list output in project/docs/sdlc/SP-2/evidence/raw/Edit-Delete-frontend-1.log. No evidence summary written (per brief).
+- Open items: restart the backend (8080) and the dev server (5174), re-probe OPTIONS /api/items/1 (expect 200 with PUT and DELETE in Allow), then run `npx playwright test --config=playwright.config.js` from project/frontend and append the output to the raw log.
+
+## Consolidated unit map (final record for CP4 approvals)
+
+Each unit is one task-level commit on sdlc/SP-2, created with checkpoint-commit. Each unit needs its own CP4 approval against this log revision. Commit SHAs are the commits present on the branch at consolidation time.
+
+| Unit | Content | Commit |
+|---|---|---|
+| T1 | Project scaffold, Maven Wrapper, Vite frontend | 7cf0d4d |
+| T2 | Category and grocery item persistence | 14c2a3d |
+| T3 | Clock and expiry classifier | 7df13b3 |
+| T4 | Item request and validator | da32c80 |
+| T5 | Item service (create, get, update, delete) | 7414766 |
+| T7 | Item query service with status | 6dabb08 |
+| T11 | API error handling and request binding | a188949 |
+| T12 | Item REST endpoints | 3b28cb2 |
+| T14 | Schema (ddl-auto=update) in application properties | 863301f |
+| T8 | Dashboard service | e4dcf94 |
+| T9 | Recipe catalogue (10 recipes) | 636268c |
+| T10 | Recipe suggestion service | 1cce72b |
+| T13 | Dashboard and recipe endpoints | 2d9a6ea |
+| T16 | Frontend HTTP client and API module | dcf3190 |
+| T18 | Design system, layout and expiry badges | 3a8d64d |
+| T19 | Inventory list and dashboard from API | 1eacca7 |
+| T20 | Add and edit item dialog | bb1f0df |
+| T21 | Delete confirmation dialog | 15373a7 |
+| T23 | Recipes page | 79ca243 |
+| T24 | Browser end-to-end tests (serial), including locator fix | c2148f1 |
+
+Known limitations recorded for review:
+- Shared files (App, Sidebar, styles, ItemController, ItemService) are committed in their final form under the first unit that needs them, so an intermediate commit can reference code from a later unit. The final commit builds and passes the configured verification.
+- Not implemented: backend search query (plan T6). Search and filters run in the browser over the loaded list.
+- Not delivered: recipe photographs. The recipe page uses a styled placeholder. The photo decision is pending.
+- Not delivered: a unit field. The approved requirements are unitless. A unit decision is pending.
+- Serial browser runs are required (workers 1) because the specs share one backend database.
+- Verification record: backend configured gate BUILD SUCCESS with 118 tests (last backend run); Playwright 3 passed serially (evidence/raw/Playwright-final-2.log).
+
+## Fix unit R1 (code-review round 1)
+
+- Commit 971bebab: optional purchase date (ItemValidator, itemValidation.js); no-expiry items show "No expiry date" with the Valid indicator; item detail view; dashboard re-reads inventory on show; server bound to 127.0.0.1; error-path and inventory-view browser tests.
+- Verification: backend configured command BUILD SUCCESS with 119 tests; frontend build exit 0. The browser test that depends on the new validation needs the backend restarted to run against the new build.
+- Not included in any commit: local H2 database files under project/backend/data (they must be ignored on main).
+- Code-review round 2 and a fresh verification record are still to be produced before CP5.
+
 ## Revision log
 | Rev | Date (UTC) | Trigger | Agent | Summary |
 |---|---|---|---|---|
 | 1 | 2026-11-25T09:36Z | T1 implementation | developer | Created log with T1 attempt 1: backend Maven verify not run (Maven missing); frontend npm install and build exit 0. |
 | 2 | 2026-11-25T09:50Z | T1 attempt 2 (human-accepted scope clarification: wrapper files) | developer | Added official Maven Wrapper 3.3.4 (scripts, jar, properties; sources and hashes recorded). Backend configured gate exit 1 (wrapper .mvn lookup from project/); frontend build exit 0; versions recorded; build output cleaned. |
+| 3 | 2026-11-25T10:05Z | T2 implementation | developer | Added T2 attempt 1: Category enum, GroceryItem entity, ItemRepository and ItemPersistenceTest. No dependency added. Configured backend gate exit 0, BUILD SUCCESS, 9 tests pass (8 T2, 1 existing). Schema generation for the default profile left as an open question. |
+| 4 | 2026-11-25T10:22Z | Add Item backend | developer | Added T3 classifier, T4 request and validator, T5 create and list service, T11 error handling and strict binding, T12 POST and GET endpoints; ddl-auto=update in application.properties. Backend gate exit 0, BUILD SUCCESS, 54 tests pass. No dependency added. Findings F1 (binding stops at first type error) and F2 (name collation) recorded. |
+| 5 | 2026-11-25T10:27Z | Add Item frontend | developer | Added frontend API client, items API, categories constant, inventory list from API, add item dialog, dashboard from API, toast; removed sampleData.js; vite /api proxy; Playwright config and add-item e2e spec. Build exit 0. Playwright run not executed (backend on 8080 down). |
+| 6 | 2026-11-25T10:38Z | Edit and delete backend | developer | Added GET, PUT and DELETE /api/items/{id}, ItemNotFoundException mapped to 404, service get/update/delete with existing validation; tests added. Backend verify exit 0, BUILD SUCCESS, 72 tests pass. No dependency or entity change. |
+| 7 | 2026-11-25T10:38Z | Edit and delete frontend | developer | Added Edit (AddItemDialog edit mode, PUT) and Delete (DeleteItemDialog confirmation, DELETE) per inventory row; updateItem and deleteItem client functions; toasts "Updated {name}." and "Deleted {name}."; shared list refresh keeps dashboard counts in step; e2e/edit-delete.spec.js added. Build exit 0; Playwright list exit 0; Playwright run not executed (backend on 8080 predates the new routes; dev server predates vite.config.js). |
+| 8 | 2026-11-25T11:02Z | consolidated final record for CP4 approvals | orchestrator | Added consolidated unit map (19 units, commits listed). Recorded limitations (shared-file commits, T6 not built, photos and unit pending). Playwright 3 passed serially. No code change in this revision. |
+| 9 | 2026-11-25T11:12Z | fix unit R1 (code-review round 1) | orchestrator | Committed fix round as R1 (971bebab) and recorded it; no other change. |
