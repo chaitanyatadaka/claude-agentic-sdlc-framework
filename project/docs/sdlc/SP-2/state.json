@@ -1,0 +1,26 @@
+{
+    "key":  "SP-2",
+    "status":  "running",
+    "phase":  "requirements",
+    "awaiting":  "",
+    "created_at":  "2026-11-25T08:03:30.5920768Z",
+    "updated_at":  "2026-11-25T08:03:30.5920768Z",
+    "delivery":  "remote",
+    "branch":  "sdlc/SP-2",
+    "base_branch":  "main",
+    "pr_url":  null,
+    "git":  {
+                "is_repo":  true,
+                "repo_root_is_workspace":  true,
+                "hooks_path_ok":  true,
+                "remote_configured":  true,
+                "base_branch_exists":  false,
+                "current_branch":  "main",
+                "agent_identity_configured":  false
+            },
+    "warnings":  [
+                     "Base branch main does not exist yet. Branch creation is deferred.",
+                     "Agent Git identity is not configured. Commits are blocked until it is set."
+                 ],
+    "framework_version":  "0.1.0"
+}

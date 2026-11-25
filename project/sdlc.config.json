@@ -1,0 +1,22 @@
+{
+  "framework_version": "0.1.0",
+  "jira_project_key": "SP",
+  "base_branch": "main",
+  "branch_prefix": "sdlc",
+  "cp4_granularity": "task",
+  "verification": [
+    {
+      "name": "backend-build-and-tests",
+      "command": "cmd /c \"set MAVEN_BASEDIR=backend&& backend\\mvnw.cmd -B -f backend\\pom.xml verify\"",
+      "stop_on_failure": true
+    },
+    {
+      "name": "frontend-build",
+      "command": "npm --prefix frontend run build",
+      "stop_on_failure": true
+    }
+  ],
+  "lint_command": null,
+  "dependency_audit_command": null,
+  "policy": {}
+}

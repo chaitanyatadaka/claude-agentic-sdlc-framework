@@ -1,0 +1,26 @@
+{
+    "key":  "SP-2",
+    "checkpoint":  "CP1",
+    "unit":  "",
+    "version":  "1",
+    "decision":  "approved",
+    "covers":  {
+                   "requirements":  {
+                                        "path":  "project/docs/sdlc/SP-2/requirements.md",
+                                        "sha256":  "c63daf867b97a026ea8e0a8d3a5983a667672310fe8c552ee60b288edeea6234"
+                                    }
+               },
+    "inputs":  {
+                   "story":  "cf1754dacd3995bd4491520cea93d7258488a1433e0d9c5a4facb8dcbc3858c1"
+               },
+    "git":  {
+                "head":  "",
+                "commits":  [
+
+                            ]
+            },
+    "approved_by":  "Tadaka Chaitanya",
+    "approved_at":  "2026-11-25T08:13:42.8850688Z",
+    "supersedes":  "",
+    "record_sha256":  "bb94304c09303a53b6bcc9ecba185819e3e33d9008c7d7b6baa6d7e11a741b02"
+}
