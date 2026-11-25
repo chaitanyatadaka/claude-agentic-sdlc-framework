@@ -48,7 +48,8 @@ test('add an item through the form and see it persisted in the inventory', async
   await second.getByLabel('Category', { exact: true }).selectOption('Fruits');
   await second.getByRole('button', { name: 'Save item' }).click();
 
-  const quantityField = second.locator('.field', { has: second.getByLabel('Quantity', { exact: true }) });
+  // The has-locator is evaluated inside each .field, so it must not be chained from the dialog.
+  const quantityField = second.locator('.field', { has: page.getByLabel('Quantity', { exact: true }) });
   await expect(quantityField.getByText('Quantity must be a whole number greater than 0.')).toBeVisible();
   await expect(second.getByLabel('Quantity', { exact: true })).toHaveAttribute('aria-invalid', 'true');
 
