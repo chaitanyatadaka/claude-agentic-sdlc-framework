@@ -137,6 +137,12 @@ h2 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.75rem; }
 .btn-danger-subtle:hover { background: var(--red-100); }
 .btn-sm { font-size: 0.85rem; padding: 0.3rem 0.7rem; }
 .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.link-button { background: none; border: 0; padding: 0; font: inherit; color: var(--sage-700); cursor: pointer; text-align: left; }
+.link-button:hover { text-decoration: underline; }
+.link-button:focus-visible { outline: 2px solid var(--sage-500); outline-offset: 2px; }
+.detail-list { margin: 0; }
+.detail-list dt { color: var(--text-muted); font-weight: 600; }
+.detail-list dd { margin: 0; text-align: right; }
 
 /* Loading and error states */
 .error-state {

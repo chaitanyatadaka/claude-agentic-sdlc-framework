@@ -18,7 +18,7 @@ function valuesFromItem(item) {
     name: item.name,
     quantity: String(item.quantity),
     category: item.category,
-    purchaseDate: item.purchaseDate,
+    purchaseDate: item.purchaseDate ?? '',
     expiryDate: item.expiryDate ?? '',
   };
 }

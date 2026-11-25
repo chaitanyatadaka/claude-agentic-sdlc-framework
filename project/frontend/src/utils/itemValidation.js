@@ -35,18 +35,20 @@ export function validateItemForm(values, today = todayIso()) {
     errors.category = 'Choose a category.';
   }
 
-  if (!values.purchaseDate) {
-    errors.purchaseDate = 'Purchase date is required.';
-  } else if (!isRealIsoDate(values.purchaseDate)) {
-    errors.purchaseDate = 'Enter a valid purchase date.';
-  } else if (values.purchaseDate > today) {
-    errors.purchaseDate = 'Purchase date must not be later than today.';
+  // Purchase date is optional (REQ-001, Decided Q-001). When given, it must be a real date,
+  // not later than today, and not after the expiry date when both are given.
+  if (values.purchaseDate) {
+    if (!isRealIsoDate(values.purchaseDate)) {
+      errors.purchaseDate = 'Enter a valid purchase date.';
+    } else if (values.purchaseDate > today) {
+      errors.purchaseDate = 'Purchase date must not be later than today.';
+    }
   }
 
   if (values.expiryDate) {
     if (!isRealIsoDate(values.expiryDate)) {
       errors.expiryDate = 'Enter a valid expiry date.';
-    } else if (!errors.purchaseDate && values.purchaseDate > values.expiryDate) {
+    } else if (!errors.purchaseDate && values.purchaseDate && values.purchaseDate > values.expiryDate) {
       errors.purchaseDate = 'Purchase date must not be after the expiry date.';
     }
   }
@@ -54,15 +56,17 @@ export function validateItemForm(values, today = todayIso()) {
   return errors;
 }
 
-// Builds the POST body. The name is sent as typed (the backend stores it untrimmed, A-003).
-// expiryDate is omitted when empty.
+// Builds the POST/PUT body. The name is sent as typed (the backend stores it untrimmed, A-003).
+// purchaseDate and expiryDate are omitted when empty.
 export function toCreatePayload(values) {
   const payload = {
     name: values.name,
     quantity: Number(values.quantity),
     category: values.category,
-    purchaseDate: values.purchaseDate,
   };
+  if (values.purchaseDate) {
+    payload.purchaseDate = values.purchaseDate;
+  }
   if (values.expiryDate) {
     payload.expiryDate = values.expiryDate;
   }

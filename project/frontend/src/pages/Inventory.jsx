@@ -4,6 +4,7 @@ import ExpiryBadge from '../components/ExpiryBadge.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import AddItemDialog from '../components/AddItemDialog.jsx';
 import DeleteItemDialog from '../components/DeleteItemDialog.jsx';
+import ItemDetail from '../components/ItemDetail.jsx';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -28,6 +29,8 @@ export default function Inventory({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  // Id of the item open in the detail view (REQ-003), or null for the list.
+  const [detailId, setDetailId] = useState(null);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -36,6 +39,12 @@ export default function Inventory({
       .filter((item) => (category ? item.category === category : true))
       .filter((item) => (statusFilter === 'all' ? true : item.status === statusFilter));
   }, [items, query, category, statusFilter]);
+
+  if (detailId !== null) {
+    // Looked up in the shared list each render, so the detail follows any refresh.
+    const detailItem = items.find((item) => item.id === detailId) ?? null;
+    return <ItemDetail item={detailItem} onBack={() => setDetailId(null)} />;
+  }
 
   function renderBody() {
     if (status === 'error') {
@@ -66,13 +75,29 @@ export default function Inventory({
           <tbody>
             {rows.map((item) => (
               <tr key={item.id} className={`row-${item.status}`}>
-                <td data-label="Item"><strong>{item.name}</strong></td>
+                <td data-label="Item">
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => setDetailId(item.id)}
+                  >
+                    <strong>{item.name}</strong>
+                  </button>
+                </td>
                 <td data-label="Category">{item.category}</td>
                 <td data-label="Quantity" className="num">{item.quantity}</td>
-                <td data-label="Expiry date">{item.expiryDate ?? '—'}</td>
+                <td data-label="Expiry date">{item.expiryDate ?? 'No expiry date'}</td>
                 <td data-label="Status"><ExpiryBadge status={item.status ?? 'none'} /></td>
                 <td data-label="Actions">
                   <div className="row-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      aria-label={`View ${item.name}`}
+                      onClick={() => setDetailId(item.id)}
+                    >
+                      View
+                    </button>
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"

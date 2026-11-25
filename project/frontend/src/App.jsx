@@ -44,6 +44,13 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // REQ-019 (Decided Q-018): the dashboard reads current inventory each time it is shown,
+  // so showing it re-runs the same shared load function.
+  function handleNavigate(next) {
+    setPage(next);
+    if (next === 'dashboard') loadItems();
+  }
+
   function handleItemSaved(saved) {
     setToast({ message: `Added ${saved.name}.` });
     loadItems();
@@ -70,7 +77,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={page} onNavigate={setPage} />
+      <Sidebar active={page} onNavigate={handleNavigate} />
       <main className="content">
         {page === 'dashboard' && <Dashboard {...shared} />}
         {page === 'recipes' && <RecipesPage />}

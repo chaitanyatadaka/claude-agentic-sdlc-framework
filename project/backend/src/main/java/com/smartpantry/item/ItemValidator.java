@@ -41,12 +41,12 @@ public class ItemValidator {
             errors.put("category", "Category must be one of " + categoryNames() + ".");
         }
 
+        // Purchase date is optional (REQ-001, Decided Q-001). When given, it must not be
+        // later than today, and not later than the expiry date when both are given.
         LocalDate purchase = request.purchaseDate();
-        if (purchase == null) {
-            errors.put("purchaseDate", "Purchase date is required.");
-        } else if (purchase.isAfter(LocalDate.now(clock))) {
+        if (purchase != null && purchase.isAfter(LocalDate.now(clock))) {
             errors.put("purchaseDate", "Purchase date must not be later than today.");
-        } else if (request.expiryDate() != null && purchase.isAfter(request.expiryDate())) {
+        } else if (purchase != null && request.expiryDate() != null && purchase.isAfter(request.expiryDate())) {
             errors.put("purchaseDate", "Purchase date must not be after the expiry date.");
         }
 

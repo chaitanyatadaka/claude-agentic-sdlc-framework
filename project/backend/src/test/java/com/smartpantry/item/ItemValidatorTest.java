@@ -101,10 +101,13 @@ class ItemValidatorTest {
     }
 
     @Test
-    void missingPurchaseDateGivesPurchaseDateMessage() {
-        Map<String, String> errors = validator.validate(request("Milk", 1, Category.Dairy, null, null));
-        assertEquals(1, errors.size());
-        assertTrue(errors.containsKey("purchaseDate"));
+    void missingPurchaseDateIsAcceptedBecauseItIsOptional() {
+        assertTrue(validator.validate(request("Milk", 1, Category.Dairy, null, null)).isEmpty());
+    }
+
+    @Test
+    void missingPurchaseDateWithExpiryDateIsAccepted() {
+        assertTrue(validator.validate(request("Milk", 1, Category.Dairy, null, TODAY.plusDays(7))).isEmpty());
     }
 
     @Test
