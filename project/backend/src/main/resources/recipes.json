@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Scrambled Eggs",
+    "ingredients": ["Eggs", "Butter", "Milk", "Salt"]
+  },
+  {
+    "name": "Tomato Pasta",
+    "ingredients": ["Pasta", "Tomato", "Garlic", "Olive oil", "Basil"]
+  },
+  {
+    "name": "Cheese Omelette",
+    "ingredients": ["Eggs", "Milk", "Cheese", "Butter"]
+  },
+  {
+    "name": "Garlic Bread",
+    "ingredients": ["Bread", "Butter", "Garlic"]
+  },
+  {
+    "name": "Vegetable Fried Rice",
+    "ingredients": ["Rice", "Eggs", "Soy sauce", "Onion", "Carrot"]
+  },
+  {
+    "name": "Banana Pancakes",
+    "ingredients": ["Banana", "Eggs", "Flour", "Milk"]
+  },
+  {
+    "name": "Caprese Salad",
+    "ingredients": ["Tomato", "Mozzarella", "Basil", "Olive oil"]
+  },
+  {
+    "name": "Vegetable Soup",
+    "ingredients": ["Onion", "Carrot", "Potato", "Celery", "Vegetable stock"]
+  },
+  {
+    "name": "Cheese Quesadilla",
+    "ingredients": ["Tortilla", "Cheese", "Bell pepper", "Onion"]
+  },
+  {
+    "name": "Yogurt Fruit Bowl",
+    "ingredients": ["Yogurt", "Banana", "Honey", "Oats"]
+  }
+]
